@@ -1,0 +1,129 @@
+{
+    "identities": {
+        "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479": {
+            "name": "bot",
+            "about": "beep",
+            "picture": "",
+            "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479"
+        }
+    },
+    "events": {
+        "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479": {
+            "2": [
+                {
+                    "id": "b4e70f71ac87ac8c25347832f961802671fdedcc74300cc677809a51be4e1255",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448438,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "9868eece845fcc7a0345978926640e26becaa1d62160be02da69acf4c77e5a2fc550b0647568c44873c9afd889457e5e97738e6ef5a1ae7a44b603bbed4bf0f2"
+                },
+                {
+                    "id": "630e69fa314f9ae9c9e15da7bc2c4a73c49c5e0fc5782c073ec8fb0850574dee",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448624,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "beea9f4666a185c6333f44b1679de9cfa7bc88db64879d139f8b8ca2021a5aafa6a363a0c1a81c098283a1ac3e2d81f41eaf0aedb59760681382f20d0b9ce70f"
+                },
+                {
+                    "id": "7d5e5115e0c5a92160136f01faa6e9985a2c9cdf307847e60ba565263d4dc9a2",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448625,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "3ace15460871492b590a3f2eb892ddb57e6cc328e88d8e219234558915912d5b7920b8cc1d20d568b967547a5f68c10a60312702e45841b6a36a063e19a3dc35"
+                },
+                {
+                    "id": "449a36c78aa1622c0137c847933be906aa729d95aeab2f5247892b6e97d14ebc",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448626,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "5d195406ef278a2a3e115153ac491fa6c1841eec500067392fcc5099c088f3b6c5880480063c08ee466baad512d6fdf1b2992f02f5d566dff06f352ffba749de"
+                },
+                {
+                    "id": "449a36c78aa1622c0137c847933be906aa729d95aeab2f5247892b6e97d14ebc",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448626,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "5d195406ef278a2a3e115153ac491fa6c1841eec500067392fcc5099c088f3b6c5880480063c08ee466baad512d6fdf1b2992f02f5d566dff06f352ffba749de"
+                },
+                {
+                    "id": "5e1265cf112ca2ca50a61b9bfd4deb8c56a7cc08ebffdef3b569fe02d1bc42af",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448632,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "acc08c7c6e44a921d9ed2be4492eb05bc16e738cc1af8b933593348f4d280dcaa81bd3f3ebdc0236aa4983f43f93519f7fc20c8c11f0097c93ed8ec5d83d0b73"
+                },
+                {
+                    "id": "ee5bf96fcbc5e7aefcee72ff494e8c0d9072c5188fbe004b230ee019f884e159",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448791,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "65bb15f262fce509c7161e9808d537e744ace0273181d223ae08cd33351ba7dbcdcaef936c453f03187da56cc4c4c7c5f7e39354a47c2a8e8f2e0c490206f39a"
+                },
+                {
+                    "id": "61f45f63b7619a8a9865bdb9f8631f20e3852ec3e308e970b63b72e44006dbf5",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448818,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "fa1ab8594e4d2652ad72c3cf3b717f067a744cf48d6fb5102485f462b84dac771ab2a23d79ace8a9a03e77f112dbf34028ac06d918a758da4bd1a3cd5e2b8a2d"
+                },
+                {
+                    "id": "16600e91e007a3a42640f53604778ced8e8f265c2f7262c8dde6a2bf7532932c",
+                    "kind": 2,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448937,
+                    "tags": [],
+                    "content": "wss://somerelay.com",
+                    "sig": "e20b67a4de6b85036aaf0fa9534fa5949b5d3fa247575efc9610a6aab65b601a43a98c4947cf1a196ade94e9d63e6cc164c8b5645d404bdfae57941ec281bc98"
+                }
+            ],
+            "0": [
+                {
+                    "id": "3a5ed2101fbeb521a57873f49c6842b03faab7713276727e034a360b3f2012bc",
+                    "kind": 0,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1672448934,
+                    "tags": [],
+                    "content": "{\"name\":\"bot\",\"about\":\"beep\",\"picture\":\"\"}",
+                    "sig": "5b90bbe42cd8e58fd3a0d647c615139bf85ec9afd2ab753cf1071f9c8a8a2e23cd6d4c0a6f7b8978a695cc772c68dedc7ac6fdfe2cba542f16a765b7f6f52126"
+                }
+            ],
+            "1": [
+                {
+                    "id": "29e4c2948a3da146b7972b0f954e81a2518185f30a97d481da61b9c8d2e06237",
+                    "kind": 1,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1674100091,
+                    "tags": [],
+                    "content": "I'm a bot written by taiga",
+                    "sig": "81c7fc005f59348cecf1468038a173e9362d1885a3cdb463ba7e886fed05c558294ca746f6604f9c005375c138f3316683db1c47dfce270b8286a2db929165ad"
+                },
+                {
+                    "id": "9ba23209233b65dbfd6a8762a5742f36d5850bc4e47182df56a2d5e155b00e2e",
+                    "kind": 1,
+                    "pubkey": "25f46974c1fe23c683a9ad4c6ffe5e62d2d8e887dc8e9789f59d2c1bf4082479",
+                    "created_at": 1674149326,
+                    "tags": [],
+                    "content": "I'm a bot written by taiga",
+                    "sig": "c35413a15ebd1f66985caa9b4eb05e257bc711c0a2b22ed54fba4f49debd26244018f2a836a6c9b7258836488ea1eb15f75255a32cc80416ed74489b344c8a38"
+                }
+            ]
+        }
+    },
+    "subscriptions": {}
+}
