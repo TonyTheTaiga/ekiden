@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
-from ekiden.keys import PrivateKey, PublicKey
+from ekiden.keys import PrivateKey, PublicKey, VerificationError
 
 
 def dump_json(obj) -> str:
@@ -58,7 +58,20 @@ class Event(BaseModel):
 
     @property
     def id(self) -> str:
-        # <32-bytes sha256 hex-encoded string of the the serialized event data>
+        """
+        <32-bytes sha256 hex-encoded string of the the serialized event data>
+        To obtain the `event.id`, we sha256 the serialized event. The serialization is done over the UTF-8 JSON-serialized string (with no white space or line breaks) of the following structure:
+
+        `[
+        0,
+        <pubkey, as a (lowercase) hex string>,
+        <created_at, as a number>,
+        <kind, as a number>,
+        <tags, as an array of arrays of non-null strings>,
+        <content, as a string>
+        ]`
+
+        """
         return sha256(
             Event.serialize(
                 pubkey=self.pubkey,
@@ -87,35 +100,22 @@ class Event(BaseModel):
         }
 
     @classmethod
-    def verify(cls, event) -> Event:
+    def verify(cls, event: dict) -> Event:
         """
         Verify the contents of the event with the signature and fields given.
 
         Returns a new instance with the provided information if successful else raises a ValueError
         """
         ret = PublicKey(event["pubkey"]).verify(
-            msg=sha256(
-                Event.serialize(
-                    pubkey=event["pubkey"],
-                    created_at=event["created_at"],
-                    kind=event["kind"],
-                    tags=event["tags"],
-                    content=event["content"],
-                ).encode("utf-8")
-            ).digest(),
+            msg=bytes.fromhex(event["id"]),
             signature=event["sig"],
         )
         if not ret:
-            raise ValueError("contents of the message could not be verified with the signature provided")
+            raise VerificationError(
+                "contents of the message could not be verified with the signature provided"
+            )
 
-        return Event(
-            pubkey=event["pubkey"],
-            created_at=event["created_at"],
-            kind=event["kind"],
-            tags=event["tags"],
-            content=event["content"],
-            sig=event["sig"],
-        )
+        return Event(**event)
 
     @staticmethod
     def serialize(pubkey, created_at, kind, tags, content) -> str:
@@ -127,14 +127,18 @@ class Filters(BaseModel):
     # a filter that can contain more than one items are to be treated as and conditions
 
     ids: Optional[List[str]] = []  # <a list of event ids or prefixes>
-    authors: Optional[List[str]] = []  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
+    authors: Optional[
+        List[str]
+    ] = []  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
     #  A prefix match is when the filter string is an exact string prefix of the event value
 
     kinds: Optional[List[int]] = []  # <a list of a kind numbers>
     event_ids: Optional[List[str]] = Field(
         alias="#e", default=[]
     )  # <a list of event ids that are referenced in an "e" tag>
-    pubkeys: Optional[List[str]] = Field(alias="#p", default=[])  # <a list of pubkeys that are referenced in a "p" tag>
+    pubkeys: Optional[List[str]] = Field(
+        alias="#p", default=[]
+    )  # <a list of pubkeys that are referenced in a "p" tag>
     since: Optional[int]  #  <a timestamp, events must be newer than this to pass>
     until: Optional[int]  # <a timestamp, events must be older than this to pass>
     limit: Optional[int]  # <maximum number of events to be returned in the initial query>

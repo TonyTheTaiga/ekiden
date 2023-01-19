@@ -2,15 +2,15 @@
 
 **HUGE WORK IN PROGRESS**
 
-My goal for Ekiden is to create a feature complete (all NIPs implemented) relay server that is highly performant and easily deployable.
+My goal for Ekiden is to create a feature complete relay server that is highly performant and easily deployable.
 
 ## WTF is Nostr?
 "Notes and Other Stuff Transmitted by Relays"
 
-[Nostr](https://github.com/nostr-protocol/nostr) is an open-source network protocol that defines how messages are passed between clients and relays.
+Nostr is an open-source network protocol that defines how messages are passed between clients and relays. Read more about its use cases and the problems it's trying to solve [here](https://github.com/nostr-protocol/nostr).
 
 
-## NIPs Implemented
+## NIPs **Implemented**
 - [x] NIPS-1
 - [ ] NIPS-2
 - [ ] NIPS-3
