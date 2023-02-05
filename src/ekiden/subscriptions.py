@@ -100,11 +100,12 @@ class SubscriptionPool:
 
     async def broadcast(self, event: Event):
         _stale = []
-        for subscription in self._subscriptions:
-            try:
-                await subscription.send(event)
-            except RuntimeError:
-                _stale.append(subscription)
 
         async with self._access_lock:
+            for subscription in self._subscriptions:
+                try:
+                    await subscription.send(event)
+                except RuntimeError:
+                    _stale.append(subscription)
+
             [await self.remove_subscription(subscription) for subscription in _stale]

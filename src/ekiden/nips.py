@@ -121,6 +121,17 @@ class Event(BaseModel):
     def serialize(pubkey, created_at, kind, tags, content) -> str:
         return dump_json([0, pubkey, created_at, kind, tags, content])
 
+    def dict(self):
+        return {
+            "id": self.id,
+            "pubkey": self.pubkey,
+            "created_at": self.created_at,
+            "kind": self.kind,
+            "tags": [tag.json_array() for tag in self.tags],
+            "content": self.content,
+            "sig": self.sig,
+        }
+
 
 class Filters(BaseModel):
     # each field is considered a `filter`. multiple filters are or conditions (e.g only one has to pass for the event to be valid)
