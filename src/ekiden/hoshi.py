@@ -6,10 +6,10 @@ from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from ekiden.subscriptions import Subscription, SubscriptionPool
 from ekiden.database import Database
 from ekiden.nips import Event, Filters
 from ekiden.relay import AsyncRelay
+from ekiden.subscriptions import Subscription, SubscriptionPool
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,13 +38,23 @@ class RelayEndpoint:
                     """
                     used to request events and subscribe to new updates
                     """
-                    await self.sub_pool.add_subscription(
-                        subscription=Subscription(
-                            filters=Filters.parse_obj(msg[2]),
-                            websocket=websocket,
-                            subscription_id=msg[1],
-                        )
+                    sub = Subscription(
+                        filters=Filters.parse_obj(msg[2]),
+                        websocket=websocket,
+                        subscription_id=msg[1],
                     )
+                    await self.sub_pool.add_subscription(subscription=sub)
+                    for _, event_dict in db.events.items():
+                        for _, events in event_dict.items():
+                            [
+                                await sub.send(event)
+                                for event in events[
+                                    slice(0, sub.filters.limit)
+                                    if sub.filters.limit
+                                    else slice(0, len(events))
+                                ]
+                            ]
+
                 elif msg[0] == "CLOSE":
                     """
                     used to stop previous subscriptions
