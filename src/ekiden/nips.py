@@ -126,11 +126,14 @@ class Filters(BaseModel):
     # each field is considered a `filter`. multiple filters are or conditions (e.g only one has to pass for the event to be valid)
     # a filter that can contain more than one items are to be treated as and conditions
 
+    #  A prefix match is when the filter string is an exact string prefix of the event value
+    # prefix = aaa, aaa432 is valid, xaaa12332 is not valid
     ids: Optional[List[str]] = []  # <a list of event ids or prefixes>
     authors: Optional[
         List[str]
-    ] = []  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
-    #  A prefix match is when the filter string is an exact string prefix of the event value
+    ] = (
+        []
+    )  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
 
     kinds: Optional[List[int]] = []  # <a list of a kind numbers>
     event_ids: Optional[List[str]] = Field(
@@ -141,7 +144,9 @@ class Filters(BaseModel):
     )  # <a list of pubkeys that are referenced in a "p" tag>
     since: Optional[int]  #  <a timestamp, events must be newer than this to pass>
     until: Optional[int]  # <a timestamp, events must be older than this to pass>
-    limit: Optional[int]  # <maximum number of events to be returned in the initial query>
+    limit: Optional[
+        int
+    ]  # <maximum number of events to be returned in the initial query>
 
 
 class Command(BaseModel):

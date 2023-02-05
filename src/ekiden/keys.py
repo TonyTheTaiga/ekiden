@@ -19,7 +19,9 @@ class PublicKey:
         return self._public_key.serialize().hex()[2:]
 
     def verify(self, msg: bytes, signature: str) -> bool:
-        return self._public_key.schnorr_verify(msg, bytes.fromhex(signature), None, raw=True)
+        return self._public_key.schnorr_verify(
+            msg, bytes.fromhex(signature), None, raw=True
+        )
 
 
 class PrivateKey:

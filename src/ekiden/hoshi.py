@@ -6,17 +6,17 @@ from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from ekiden.connections import Subscription, SubscriptionPool
 from ekiden.database import Database
 from ekiden.nips import Event, Filters
 from ekiden.relay import AsyncRelay
+from ekiden.subscriptions import Subscription, SubscriptionPool
 
 logging.basicConfig(level=logging.INFO)
 
 
 class RelayEndpoint:
-    conn_pool = SubscriptionPool()
-    relay = AsyncRelay(conn_pool=conn_pool)
+    sub_pool = SubscriptionPool()
+    relay = AsyncRelay(sub_pool=sub_pool)
 
     async def __call__(self, scope, receive, send):
         websocket = WebSocket(scope=scope, receive=receive, send=send)
@@ -27,41 +27,47 @@ class RelayEndpoint:
         db = await Database.load()
         try:
             while True:
-                msg = await websocket.receive_text()
-                decoded = json.loads(msg)
-                if decoded[0] == "EVENT":
+                msg = await websocket.receive_json()
+                if msg[0] == "EVENT":
                     """
                     used to publish events
                     """
-                    response = await self.relay.event(decoded[1], db)
+                    response = await self.relay.event(msg[1], db)
                     await websocket.send_text(response)
-                elif decoded[0] == "REQ":
+                elif msg[0] == "REQ":
                     """
                     used to request events and subscribe to new updates
                     """
-                    subscription_id = decoded[1]
-                    filters = Filters.parse_obj(decoded[2])
-                    self.conn_pool.add_subscription(
-                        subscription=Subscription(
-                            filters=filters,
-                            websocket=websocket,
-                            subscription_id=subscription_id,
-                        )
+                    sub = Subscription(
+                        filters=Filters.parse_obj(msg[2]),
+                        websocket=websocket,
+                        subscription_id=msg[1],
                     )
-                elif decoded[0] == "CLOSE":
+                    await self.sub_pool.add_subscription(subscription=sub)
+                    for _, event_dict in db.events.items():
+                        for _, events in event_dict.items():
+                            [
+                                await sub.send(event)
+                                for event in events[
+                                    slice(0, sub.filters.limit)
+                                    if sub.filters.limit
+                                    else slice(0, len(events))
+                                ]
+                            ]
+
+                elif msg[0] == "CLOSE":
                     """
                     used to stop previous subscriptions
                     """
-                    subscription = self.conn_pool.get_subscription(websocket=websocket)
-                    self.conn_pool.remove_subscription(subscription)
+                    await self.handle_disconnect(websocket)
 
         except WebSocketDisconnect:
-            self.handle_disconnect(websocket)
+            await self.handle_disconnect(websocket)
 
-    def handle_disconnect(self, websocket):
-        subscription = self.conn_pool.get_subscription(websocket=websocket)
+    async def handle_disconnect(self, websocket: WebSocket):
+        subscription = await self.sub_pool.get_subscription(websocket=websocket)
         if subscription:
-            self.conn_pool.remove_subscription(subscription)
+            await self.sub_pool.remove_subscription(subscription)
 
 
 def create_app():

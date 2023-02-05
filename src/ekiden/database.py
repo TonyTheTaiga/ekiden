@@ -30,7 +30,6 @@ class DBEvent(BaseModel):
 class Database(BaseModel):
     identities: Optional[Dict[str, Identity]] = {}
     events: Optional[Dict[str, Dict[Kind, List[DBEvent]]]] = {}
-    subscriptions: Optional[Dict] = {}
 
     lock: Lock = db_lock
 
