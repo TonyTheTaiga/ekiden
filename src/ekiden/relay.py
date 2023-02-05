@@ -45,6 +45,7 @@ class AsyncRelay:
             #     # TODO: if Kind.recommend_server validate that the content of the event is a valId websocket uri (ws://..., wss://...)
             await self.conn_pool.broadcast(event)
 
+        # Save event to db
         kind_events = events.setdefault(event.kind, [])
         kind_events.append(
             {

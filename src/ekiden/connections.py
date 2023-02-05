@@ -22,8 +22,19 @@ def validate_authors(candidates, subject):
     return True if subject in candidates else False
 
 
+def validate_kinds(candidates, subject):
+    if len(candidates) == 0:
+        return True
+
+    return True if subject in candidates else False
+
+
 def validate_filters(event: Event, filters: Filters):
-    if validate_ids(filters.ids, event.id) and validate_authors(filters.authors, event.pubkey):
+    if (
+        validate_ids(filters.ids, event.id)
+        and validate_authors(filters.authors, event.pubkey)
+        and validate_kinds(filters.kinds, event.kind)
+    ):
         return True
     return False
 

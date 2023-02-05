@@ -39,13 +39,11 @@ class RelayEndpoint:
                     """
                     used to request events and subscribe to new updates
                     """
-                    subscription_id = decoded[1]
-                    filters = Filters.parse_obj(decoded[2])
                     self.conn_pool.add_subscription(
                         subscription=Subscription(
-                            filters=filters,
+                            filters=Filters.parse_obj(decoded[2]),
                             websocket=websocket,
-                            subscription_id=subscription_id,
+                            subscription_id=decoded[1],
                         )
                     )
                 elif decoded[0] == "CLOSE":
@@ -58,7 +56,7 @@ class RelayEndpoint:
         except WebSocketDisconnect:
             self.handle_disconnect(websocket)
 
-    def handle_disconnect(self, websocket):
+    def handle_disconnect(self, websocket: WebSocket):
         subscription = self.conn_pool.get_subscription(websocket=websocket)
         if subscription:
             self.conn_pool.remove_subscription(subscription)
