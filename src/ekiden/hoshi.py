@@ -1,13 +1,8 @@
-import json
 import logging
 
-from starlette.applications import Starlette
-from starlette.endpoints import WebSocketEndpoint
-from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
-from tortoise import Tortoise
 
-from ekiden.database import Database
+from ekiden import database
 from ekiden.nips import Filters
 from ekiden.relay import AsyncRelay
 from ekiden.subscriptions import Subscription, SubscriptionPool
@@ -25,7 +20,6 @@ class Hoshi:
 
     async def endpoint(self, websocket: WebSocket):
         await websocket.accept()
-        db = await Database.load()
         try:
             while True:
                 msg = await websocket.receive_json()
@@ -33,7 +27,7 @@ class Hoshi:
                     """
                     used to publish events
                     """
-                    response = await self.relay.event(msg[1], db)
+                    response = await self.relay.event(msg[1])
                     await websocket.send_text(response)
                 elif msg[0] == "REQ":
                     """
@@ -45,14 +39,8 @@ class Hoshi:
                         subscription_id=msg[1],
                     )
                     await self.sub_pool.add_subscription(subscription=sub)
-                    for _, event_dict in db.events.items():
-                        for _, events in event_dict.items():
-                            [
-                                await sub.send(event)
-                                for event in events[
-                                    slice(0, sub.filters.limit) if sub.filters.limit else slice(0, len(events))
-                                ]
-                            ]
+                    for event in await database.Event.all():
+                        await sub.send(event.nipple())
 
                 elif msg[0] == "CLOSE":
                     """

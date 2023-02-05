@@ -104,7 +104,7 @@ class Event(BaseModel):
         """
         Verify the contents of the event with the signature and fields given.
 
-        Returns a new instance with the provided information if successful else raises a ValueError
+        Returns a new instance with the provided information if successful else raises a VerificationError
         """
         ret = PublicKey(event["pubkey"]).verify(
             msg=bytes.fromhex(event["id"]),

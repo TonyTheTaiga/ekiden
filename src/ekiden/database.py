@@ -1,21 +1,25 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from ekiden import nips
+
+
+class UnknownTagError(Exception):
+    """Throw when the stored tag could not be parsed back to its data model"""
+
 
 class Identity(Model):
-    id: int = fields.IntField(pk=True)
-    name: str = fields.TextField()
-    about: str = fields.TextField()
-    picture: str = fields.TextField()
-    pubkey: str = fields.TextField()
+    pubkey: str = fields.CharField(max_length=64, pk=True, index=True)
+    name: str = fields.TextField(null=True)
+    about: str = fields.TextField(null=True)
+    picture: str = fields.TextField(null=True)
 
     def __str__(self) -> str:
-        return self.id
+        return f"{self.pubkey}, {self.name}, {self.about}, {self.picture}"
 
 
 class Event(Model):
     id: str = fields.TextField(pk=True)
-    identity = fields.ForeignKeyField("models.Identity", related_name="events")
 
     kind = fields.IntField()
     content: str = fields.TextField()
@@ -24,5 +28,31 @@ class Event(Model):
     pubkey: str = fields.TextField()
     sig: str = fields.TextField()
 
+    class Meta:
+        table = "event"
+
     def __str__(self) -> str:
         return self.id
+
+    def nipple(self) -> nips.Event:
+        return nips.Event(
+            pubkey=self.pubkey,
+            create_at=self.created_at,
+            kind=self.kind,
+            sig=self.sig,
+            tags=[self.create_tag(tag_dict) for tag_dict in self.tags],
+            content=self.content,
+        )
+
+    def create_tag(self, tag_dict) -> nips.Tag:
+        try:
+            return nips.ETag.parse_obj(tag_dict)
+        except:
+            pass
+
+        try:
+            return nips.PTag.parse_obj(tag_dict)
+        except:
+            pass
+
+        raise UnknownTagError(f"Could not parse tag {tag_dict}")
