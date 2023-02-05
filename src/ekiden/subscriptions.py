@@ -50,12 +50,8 @@ def validate_filters(event: Event, filters: Filters):
         validate_scalar(filters.ids, event.id)
         and validate_scalar(filters.authors, event.pubkey)
         and validate_scalar(filters.kinds, event.kind)
-        and validate_multiple(
-            filters.event_ids, [tag.id for tag in event.tags if isinstance(ETag, tag)]
-        )
-        and validate_multiple(
-            filters.pubkeys, [tag.pubkey for tag in event.tags if isinstance(PTag, tag)]
-        )
+        and validate_multiple(filters.event_ids, [tag.id for tag in event.tags if isinstance(ETag, tag)])
+        and validate_multiple(filters.pubkeys, [tag.pubkey for tag in event.tags if isinstance(PTag, tag)])
         and validate_since(filters.since, event.created_at)
         and validate_until(filters.until, event.created_at)
     ):
@@ -71,9 +67,7 @@ class Subscription:
 
     async def send(self, event: Event):
         if validate_filters(event, self.filters):
-            await self.websocket.send_text(
-                dump_json(["EVENT", self.subscription_id, event.dict()])
-            )
+            await self.websocket.send_text(dump_json(["EVENT", self.subscription_id, event.dict()]))
 
 
 class SubscriptionPool:

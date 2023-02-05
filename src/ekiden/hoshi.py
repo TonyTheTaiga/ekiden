@@ -49,9 +49,7 @@ class RelayEndpoint:
                             [
                                 await sub.send(event)
                                 for event in events[
-                                    slice(0, sub.filters.limit)
-                                    if sub.filters.limit
-                                    else slice(0, len(events))
+                                    slice(0, sub.filters.limit) if sub.filters.limit else slice(0, len(events))
                                 ]
                             ]
 

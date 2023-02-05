@@ -111,9 +111,7 @@ class Event(BaseModel):
             signature=event["sig"],
         )
         if not ret:
-            raise VerificationError(
-                "contents of the message could not be verified with the signature provided"
-            )
+            raise VerificationError("contents of the message could not be verified with the signature provided")
 
         return Event(**event)
 
@@ -140,24 +138,16 @@ class Filters(BaseModel):
     #  A prefix match is when the filter string is an exact string prefix of the event value
     # prefix = aaa, aaa432 is valid, xaaa12332 is not valid
     ids: Optional[List[str]] = []  # <a list of event ids or prefixes>
-    authors: Optional[
-        List[str]
-    ] = (
-        []
-    )  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
+    authors: Optional[List[str]] = []  # <a list of pubkeys or prefixes, the pubkey of an event must be one of these>
 
     kinds: Optional[List[int]] = []  # <a list of a kind numbers>
     event_ids: Optional[List[str]] = Field(
         alias="#e", default=[]
     )  # <a list of event ids that are referenced in an "e" tag>
-    pubkeys: Optional[List[str]] = Field(
-        alias="#p", default=[]
-    )  # <a list of pubkeys that are referenced in a "p" tag>
+    pubkeys: Optional[List[str]] = Field(alias="#p", default=[])  # <a list of pubkeys that are referenced in a "p" tag>
     since: Optional[int]  #  <a timestamp, events must be newer than this to pass>
     until: Optional[int]  # <a timestamp, events must be older than this to pass>
-    limit: Optional[
-        int
-    ]  # <maximum number of events to be returned in the initial query>
+    limit: Optional[int]  # <maximum number of events to be returned in the initial query>
 
 
 class Command(BaseModel):

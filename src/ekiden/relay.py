@@ -60,9 +60,7 @@ class AsyncRelay:
         return dump_json(
             [
                 "OK",
-                sha256(
-                    event.json().encode("utf-8") + uuid4().hex.encode("utf-8")
-                ).hexdigest(),
+                sha256(event.json().encode("utf-8") + uuid4().hex.encode("utf-8")).hexdigest(),
                 "true",
                 "",
             ]
