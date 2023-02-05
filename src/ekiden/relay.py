@@ -45,7 +45,6 @@ class AsyncRelay:
                     "failed to verify key",
                 ]
             )
-
         if event.kind == Kind.set_metadata:
             try:
                 if db_event := await database.Event.get(pubkey=event.pubkey, kind=event.kind):

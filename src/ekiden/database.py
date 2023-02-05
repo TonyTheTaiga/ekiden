@@ -8,6 +8,20 @@ class UnknownTagError(Exception):
     """Throw when the stored tag could not be parsed back to its data model"""
 
 
+def create_tag(tag_dict) -> nips.Tag:
+    try:
+        return nips.ETag.parse_obj(tag_dict)
+    except:
+        pass
+
+    try:
+        return nips.PTag.parse_obj(tag_dict)
+    except:
+        pass
+
+    raise UnknownTagError(f"Could not parse tag {tag_dict}")
+
+
 class Identity(Model):
     pubkey: str = fields.CharField(max_length=64, pk=True, index=True)
     name: str = fields.TextField(null=True)
@@ -40,19 +54,6 @@ class Event(Model):
             create_at=self.created_at,
             kind=self.kind,
             sig=self.sig,
-            tags=[self.create_tag(tag_dict) for tag_dict in self.tags],
+            tags=[create_tag(tag_dict) for tag_dict in self.tags],
             content=self.content,
         )
-
-    def create_tag(self, tag_dict) -> nips.Tag:
-        try:
-            return nips.ETag.parse_obj(tag_dict)
-        except:
-            pass
-
-        try:
-            return nips.PTag.parse_obj(tag_dict)
-        except:
-            pass
-
-        raise UnknownTagError(f"Could not parse tag {tag_dict}")

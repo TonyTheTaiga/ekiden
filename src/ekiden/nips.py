@@ -37,6 +37,10 @@ class ETag(Tag):
         return dump_json(["e", self.id, self.recommended_relay_url])
 
 
+class UnknownTagError(Exception):
+    """Throw when the stored tag could not be parsed back to its data model"""
+
+
 class PTag(Tag):
     # p (pubkey) tags are list of pubkeys mentioned in `this` event
     pubkey: str  # <32-bytes hex of the pubkey>
@@ -45,6 +49,13 @@ class PTag(Tag):
     def json_array(self):
         # <['p', pubkey, recommended_relay_url]>
         return dump_json(["p", self.pubkey, self.recommended_relay_url])
+
+
+def create_tag(tag_info) -> Tag:
+    if tag_info[0] == "e":
+        return ETag(id=tag_info[1], recommended_relay_url=tag_info[2])
+
+    raise UnknownTagError(f"Could not parse tag {tag_info}")
 
 
 class Event(BaseModel):
@@ -82,8 +93,16 @@ class Event(BaseModel):
             ).encode("utf-8")
         ).hexdigest()
 
-    def sign(self, private_key: str):
-        self.sig = PrivateKey.load(private_key).sign(bytes.fromhex(self.id))
+    def sign(self, private_key: str) -> str:
+        """Signs the messge (Event.id) and sets the sig field
+
+        Args:
+            private_key (str): The private key to sign the message with
+
+        Returns:
+            str: _description_
+        """
+        self.sig = PrivateKey.load(private_key).sign(msg=bytes.fromhex(self.id))
 
     def signed(self, private_key: str) -> dict:
         if not self.sig:
@@ -112,7 +131,7 @@ class Event(BaseModel):
         )
         if not ret:
             raise VerificationError("contents of the message could not be verified with the signature provided")
-
+        event["tags"] = [create_tag(json.loads(tag_info)) for tag_info in event["tags"]]
         return Event(**event)
 
     @staticmethod
