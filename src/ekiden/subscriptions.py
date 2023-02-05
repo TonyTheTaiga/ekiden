@@ -9,7 +9,7 @@ from ekiden.nips import ETag, Event, Filters, PTag, dump_json
 logger = logging.getLogger(__name__)
 
 
-def validate_scalar(candidates, subject):
+def validate_scalar(candidates, subject) -> bool:
     """
     For scalar event attributes such as kind, the attribute from the event must be contained in the filter list
     """
@@ -19,7 +19,7 @@ def validate_scalar(candidates, subject):
     return True if subject in candidates else False
 
 
-def validate_multiple(candidates, subjects):
+def validate_multiple(candidates, subjects) -> bool:
     """
     For tag attributes such as #e, where an event may have multiple values, the event and filter condition values must have at least one item in common.
     """
@@ -31,21 +31,30 @@ def validate_multiple(candidates, subjects):
     return len(a.intersection(b)) > 0
 
 
-def validate_since(candidate, subject):
+def validate_since(candidate, subject) -> bool:
     if candidate is None:
         return True
 
     return subject > candidate
 
 
-def validate_until(candidate, subject):
+def validate_until(candidate, subject) -> bool:
     if candidate is None:
         return True
 
     return subject < candidate
 
 
-def validate_filters(event: Event, filters: Filters):
+def validate_filters(event: Event, filters: Filters) -> bool:
+    """Given a event, validate the filters on it.
+
+    Args:
+        event (Event): The event under question
+        filters (Filters): The filter to validate
+
+    Returns:
+        bool: True if the event passes the filters, else False.
+    """
     if (
         validate_scalar(filters.ids, event.id)
         and validate_scalar(filters.authors, event.pubkey)
@@ -76,6 +85,14 @@ class SubscriptionPool:
         self._access_lock = asyncio.Lock()
 
     async def get_subscription(self, websocket: WebSocket) -> Optional[Subscription]:
+        """Retrieve a subscription from the pool with the matching websocket.
+
+        Args:
+            websocket (WebSocket): The websocket to match
+
+        Returns:
+            Optional[Subscription]: The matching subscription if found, else None.
+        """
         async with self._access_lock:
             for subscription in self._subscriptions:
                 if subscription.websocket == websocket:
@@ -84,15 +101,31 @@ class SubscriptionPool:
             return None
 
     async def add_subscription(self, subscription: Subscription):
+        """Add a new subscription to the pool
+
+        Args:
+            subscription (Subscription): The subscription to add
+        """
         async with self._access_lock:
             self._subscriptions.add(subscription)
 
     async def remove_subscription(self, subscription: Subscription):
+        """Remove the subscription from the pool
+
+        Args:
+            subscription (Subscription): The subscription to remove
+        """
         logger.info(f"Removing subscription: {subscription.subscription_id}")
         async with self._access_lock:
             self._subscriptions.discard(subscription)
 
     async def broadcast(self, event: Event):
+        """Broadcasts the event to all subscribers.
+        The subscriber will only receive the message if the event passes the filters.
+
+        Args:
+            event (Event): The event to broadcast
+        """
         _stale = []
 
         async with self._access_lock:
