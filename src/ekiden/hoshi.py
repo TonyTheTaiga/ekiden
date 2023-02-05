@@ -27,39 +27,37 @@ class RelayEndpoint:
         db = await Database.load()
         try:
             while True:
-                msg = await websocket.receive_text()
-                decoded = json.loads(msg)
-                if decoded[0] == "EVENT":
+                msg = await websocket.receive_json()
+                if msg[0] == "EVENT":
                     """
                     used to publish events
                     """
-                    response = await self.relay.event(decoded[1], db)
+                    response = await self.relay.event(msg[1], db)
                     await websocket.send_text(response)
-                elif decoded[0] == "REQ":
+                elif msg[0] == "REQ":
                     """
                     used to request events and subscribe to new updates
                     """
-                    self.sub_pool.add_subscription(
+                    await self.sub_pool.add_subscription(
                         subscription=Subscription(
-                            filters=Filters.parse_obj(decoded[2]),
+                            filters=Filters.parse_obj(msg[2]),
                             websocket=websocket,
-                            subscription_id=decoded[1],
+                            subscription_id=msg[1],
                         )
                     )
-                elif decoded[0] == "CLOSE":
+                elif msg[0] == "CLOSE":
                     """
                     used to stop previous subscriptions
                     """
-                    subscription = self.sub_pool.get_subscription(websocket=websocket)
-                    self.sub_pool.remove_subscription(subscription)
+                    await self.handle_disconnect(websocket)
 
         except WebSocketDisconnect:
-            self.handle_disconnect(websocket)
+            await self.handle_disconnect(websocket)
 
-    def handle_disconnect(self, websocket: WebSocket):
-        subscription = self.sub_pool.get_subscription(websocket=websocket)
+    async def handle_disconnect(self, websocket: WebSocket):
+        subscription = await self.sub_pool.get_subscription(websocket=websocket)
         if subscription:
-            self.sub_pool.remove_subscription(subscription)
+            await self.sub_pool.remove_subscription(subscription)
 
 
 def create_app():

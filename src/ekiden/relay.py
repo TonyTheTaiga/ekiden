@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from starlette.websockets import WebSocket
 
-from ekiden.subscriptions import Subscription, SubscriptionPool
+from ekiden.subscriptions import SubscriptionPool
 from ekiden.database import Database, Identity
 from ekiden.nips import Event, Filters, Kind, dump_json
 
@@ -38,12 +38,9 @@ class AsyncRelay:
             if event.kind in events:
                 # A relay may delete past set_metadata events once it gets a new one for the same pubkey.
                 events[event.kind].pop(0)
+            await self.save_metadata(event, db=db)
 
-            await self.set_metadata(event, db=db)
-        #     await registration_handler(websocket, db, event)
-        elif event.kind in [Kind.text_note, Kind.recommend_server]:
-            #     # TODO: if Kind.recommend_server validate that the content of the event is a valId websocket uri (ws://..., wss://...)
-            await self.conn_pool.broadcast(event)
+        await self.conn_pool.broadcast(event)
 
         # Save event to db
         kind_events = events.setdefault(event.kind, [])
@@ -71,7 +68,7 @@ class AsyncRelay:
             ]
         )
 
-    async def set_metadata(self, event: Event, db: Database):
+    async def save_metadata(self, event: Event, db: Database):
         content = json.loads(event.content)
         if event.pubkey in db.identities:
             identity = db.identities.get(event.pubkey)
