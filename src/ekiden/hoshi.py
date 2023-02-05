@@ -5,16 +5,17 @@ from starlette.applications import Starlette
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
+from tortoise import Tortoise
 
 from ekiden.database import Database
-from ekiden.nips import Event, Filters
+from ekiden.nips import Filters
 from ekiden.relay import AsyncRelay
 from ekiden.subscriptions import Subscription, SubscriptionPool
 
 logging.basicConfig(level=logging.INFO)
 
 
-class RelayEndpoint:
+class Hoshi:
     sub_pool = SubscriptionPool()
     relay = AsyncRelay(sub_pool=sub_pool)
 
@@ -66,10 +67,3 @@ class RelayEndpoint:
         subscription = await self.sub_pool.get_subscription(websocket=websocket)
         if subscription:
             await self.sub_pool.remove_subscription(subscription)
-
-
-def create_app():
-    return Starlette(routes=[WebSocketRoute(path="/", endpoint=RelayEndpoint())])
-
-
-app = create_app()

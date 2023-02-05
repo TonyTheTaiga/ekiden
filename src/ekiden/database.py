@@ -1,47 +1,28 @@
-import json
-from asyncio import Lock
-from typing import Dict, List, Optional, Tuple
-
-import aiofiles
-from pydantic import BaseModel
-
-from ekiden.nips import Kind, Tag
-
-db_lock = Lock()
+from tortoise import fields
+from tortoise.models import Model
 
 
-class Identity(BaseModel):
-    name: str
-    about: str
-    picture: str
-    pubkey: str
+class Identity(Model):
+    id: int = fields.IntField(pk=True)
+    name: str = fields.TextField()
+    about: str = fields.TextField()
+    picture: str = fields.TextField()
+    pubkey: str = fields.TextField()
+
+    def __str__(self) -> str:
+        return self.id
 
 
-class DBEvent(BaseModel):
-    id: str
-    kind: int
-    pubkey: str
-    created_at: int
-    tags: Tuple[Tag, ...]
-    content: str
-    sig: str
+class Event(Model):
+    id: str = fields.TextField(pk=True)
+    identity = fields.ForeignKeyField("models.Identity", related_name="events")
 
+    kind = fields.IntField()
+    content: str = fields.TextField()
+    created_at = fields.IntField()
+    tags = fields.JSONField()
+    pubkey: str = fields.TextField()
+    sig: str = fields.TextField()
 
-class Database(BaseModel):
-    identities: Optional[Dict[str, Identity]] = {}
-    events: Optional[Dict[str, Dict[Kind, List[DBEvent]]]] = {}
-
-    lock: Lock = db_lock
-
-    class Config:
-        extra = "allow"
-        arbitrary_types_allowed = True
-
-    @classmethod
-    async def load(cls):
-        async with aiofiles.open("db.json", mode="r") as fp:
-            return Database(**json.loads(await fp.read()))
-
-    async def save_db(self):
-        async with aiofiles.open("db.json", mode="w") as fp:
-            await fp.write(self.json(indent=4, exclude={"lock"}))
+    def __str__(self) -> str:
+        return self.id

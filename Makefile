@@ -1,2 +1,2 @@
 start:
-	uvicorn ekiden.hoshi:app --reload
+	uvicorn ekiden.main:app --reload
