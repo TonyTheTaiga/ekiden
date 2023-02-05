@@ -4,14 +4,14 @@ from uuid import uuid4
 
 from starlette.websockets import WebSocket
 
-from ekiden.connections import Subscription, SubscriptionPool
+from ekiden.subscriptions import Subscription, SubscriptionPool
 from ekiden.database import Database, Identity
 from ekiden.nips import Event, Filters, Kind, dump_json
 
 
 class AsyncRelay:
-    def __init__(self, conn_pool: SubscriptionPool) -> None:
-        self.conn_pool = conn_pool
+    def __init__(self, sub_pool: SubscriptionPool) -> None:
+        self.conn_pool = sub_pool
 
     async def event(self, event_data: dict, db: Database):
         """Handles the event action.
