@@ -2,10 +2,8 @@ import json
 from hashlib import sha256
 from uuid import uuid4
 
-from starlette.websockets import WebSocket
-
 from ekiden.database import Database, Identity
-from ekiden.nips import Event, Filters, Kind, dump_json
+from ekiden.nips import Event, Kind, dump_json
 from ekiden.subscriptions import SubscriptionPool
 
 
