@@ -150,11 +150,6 @@ class Filters(BaseModel):
     limit: Optional[int]  # <maximum number of events to be returned in the initial query>
 
 
-class Command(BaseModel):
-    def command_array(self):
-        raise NotImplemented("command_array not implemented")
-
-
 class Subscribe(BaseModel):
     # used to request events and subscribe to new updates.
     subscription_id: str  # a random string that should be used to represent a subscription
@@ -162,13 +157,7 @@ class Subscribe(BaseModel):
 
     def json_array(self) -> str:
         # ['REQ', <subscription id>, <[Filter, ...]>]
-        return dump_json(
-            [
-                "REQ",
-                self.subscription_id,
-                self.filter.json(separators=(",", ":"), ensure_ascii=False),
-            ]
-        )
+        return dump_json(["REQ", self.subscription_id, self.filters.dict(exclude_defaults=True)])
 
 
 class Close(BaseModel):
