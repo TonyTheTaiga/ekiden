@@ -4,9 +4,9 @@ from uuid import uuid4
 
 from starlette.websockets import WebSocket
 
-from ekiden.subscriptions import SubscriptionPool
 from ekiden.database import Database, Identity
 from ekiden.nips import Event, Filters, Kind, dump_json
+from ekiden.subscriptions import SubscriptionPool
 
 
 class AsyncRelay:
@@ -62,7 +62,9 @@ class AsyncRelay:
         return dump_json(
             [
                 "OK",
-                sha256(event.json().encode("utf-8") + uuid4().hex.encode("utf-8")).hexdigest(),
+                sha256(
+                    event.json().encode("utf-8") + uuid4().hex.encode("utf-8")
+                ).hexdigest(),
                 "true",
                 "",
             ]

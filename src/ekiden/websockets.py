@@ -33,7 +33,9 @@ def validate_authors(candidates, subject):
 
 
 def validate_filters(event: Event, filters: Filters):
-    if validate_ids(filters.ids, event.id) and validate_authors(filters.authors, event.pubkey):
+    if validate_ids(filters.ids, event.id) and validate_authors(
+        filters.authors, event.pubkey
+    ):
         return True
     return False
 
@@ -43,14 +45,19 @@ async def publication_handler(websocket, db: Database, event: Event):
     for websocket, subscription_id, filters in subscriptions:
         if websocket.open:
             if validate_filters(event, filters):
-                await websocket.send(dump_json(["EVENT", subscription_id, event.dict()]))
+                await websocket.send(
+                    dump_json(["EVENT", subscription_id, event.dict()])
+                )
         else:
             # remove from list of subscriptions
             pass
 
 
 async def subscription_handler(
-    websocket: WebSocketServerProtocol, db: Database, subscription_id: str, filters: Filters
+    websocket: WebSocketServerProtocol,
+    db: Database,
+    subscription_id: str,
+    filters: Filters,
 ):
     subscriptions.append((websocket, subscription_id, filters))
 
@@ -67,7 +74,9 @@ async def subscription_handler(
 
 
 class Subscriber:
-    def __init__(self, websocket: WebSocketServerProtocol, subscription_id: str, filters: Filters):
+    def __init__(
+        self, websocket: WebSocketServerProtocol, subscription_id: str, filters: Filters
+    ):
         self.websocket = websocket
         self.subscription_id = subscription_id
         self.filters = filters
@@ -94,7 +103,9 @@ class Server:
                 subscription_id = decoded[1]
                 filters = Filters.parse_obj(decoded[2])
                 self.subscriptions.append(
-                    Subscriber(websocket, subscription_id=subscription_id, filters=filters)
+                    Subscriber(
+                        websocket, subscription_id=subscription_id, filters=filters
+                    )
                 )
                 # await relay.handle_request(subscription_id, filters, db)
 
