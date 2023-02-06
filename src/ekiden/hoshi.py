@@ -39,7 +39,9 @@ class Hoshi:
                         subscription_id=msg[1],
                     )
                     await self.sub_pool.add_subscription(subscription=sub)
-                    for event in await database.Event.all():
+                    # set sane cap
+                    limit = sub.filters.limit if sub.filters.limit else 100
+                    for event in await database.Event.all().limit(limit):
                         await sub.send(event.nipple())
 
                 elif msg[0] == "CLOSE":

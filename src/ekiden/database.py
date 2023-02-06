@@ -33,8 +33,9 @@ class Identity(Model):
 
 
 class Event(Model):
-    id: str = fields.TextField(pk=True)
+    table_id = fields.IntField(pk=True)
 
+    id: str = fields.TextField()
     kind = fields.IntField()
     content: str = fields.TextField()
     created_at = fields.IntField()
@@ -49,6 +50,11 @@ class Event(Model):
         return self.id
 
     def nipple(self) -> nips.Event:
+        """Converts the database record into a NIPS defined event
+
+        Returns:
+            nips.Event: NIP Event
+        """
         return nips.Event(
             pubkey=self.pubkey,
             create_at=self.created_at,

@@ -3,6 +3,7 @@ from hashlib import sha256
 from uuid import uuid4
 
 from tortoise.exceptions import DoesNotExist
+from tortoise.transactions import atomic
 
 from ekiden import database
 from ekiden.nips import Event, Kind, dump_json
@@ -27,6 +28,7 @@ class AsyncRelay:
 
         return await database.Identity.create(pubkey=pubkey)
 
+    @atomic()
     async def event(self, event_data: dict):
         """Handles the event action.
 
