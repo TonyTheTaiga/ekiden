@@ -1,20 +1,16 @@
-import json
 import logging
 
-from starlette.applications import Starlette
-from starlette.endpoints import WebSocketEndpoint
-from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from ekiden.database import Database
-from ekiden.nips import Event, Filters
+from ekiden import database
+from ekiden.nips import Filters
 from ekiden.relay import AsyncRelay
 from ekiden.subscriptions import Subscription, SubscriptionPool
 
 logging.basicConfig(level=logging.INFO)
 
 
-class RelayEndpoint:
+class Hoshi:
     sub_pool = SubscriptionPool()
     relay = AsyncRelay(sub_pool=sub_pool)
 
@@ -24,7 +20,6 @@ class RelayEndpoint:
 
     async def endpoint(self, websocket: WebSocket):
         await websocket.accept()
-        db = await Database.load()
         try:
             while True:
                 msg = await websocket.receive_json()
@@ -32,7 +27,7 @@ class RelayEndpoint:
                     """
                     used to publish events
                     """
-                    response = await self.relay.event(msg[1], db)
+                    response = await self.relay.event(msg[1])
                     await websocket.send_text(response)
                 elif msg[0] == "REQ":
                     """
@@ -44,14 +39,10 @@ class RelayEndpoint:
                         subscription_id=msg[1],
                     )
                     await self.sub_pool.add_subscription(subscription=sub)
-                    for _, event_dict in db.events.items():
-                        for _, events in event_dict.items():
-                            [
-                                await sub.send(event)
-                                for event in events[
-                                    slice(0, sub.filters.limit) if sub.filters.limit else slice(0, len(events))
-                                ]
-                            ]
+                    # set sane cap
+                    limit = sub.filters.limit if sub.filters.limit else 100
+                    for event in await database.Event.all().limit(limit):
+                        await sub.send(event.nipple())
 
                 elif msg[0] == "CLOSE":
                     """
@@ -66,10 +57,3 @@ class RelayEndpoint:
         subscription = await self.sub_pool.get_subscription(websocket=websocket)
         if subscription:
             await self.sub_pool.remove_subscription(subscription)
-
-
-def create_app():
-    return Starlette(routes=[WebSocketRoute(path="/", endpoint=RelayEndpoint())])
-
-
-app = create_app()

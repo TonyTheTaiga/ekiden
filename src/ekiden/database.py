@@ -1,47 +1,65 @@
-import json
-from asyncio import Lock
-from typing import Dict, List, Optional, Tuple
+from tortoise import fields
+from tortoise.models import Model
 
-import aiofiles
-from pydantic import BaseModel
-
-from ekiden.nips import Kind, Tag
-
-db_lock = Lock()
+from ekiden import nips
 
 
-class Identity(BaseModel):
-    name: str
-    about: str
-    picture: str
-    pubkey: str
+class UnknownTagError(Exception):
+    """Throw when the stored tag could not be parsed back to its data model"""
 
 
-class DBEvent(BaseModel):
-    id: str
-    kind: int
-    pubkey: str
-    created_at: int
-    tags: Tuple[Tag, ...]
-    content: str
-    sig: str
+def create_tag(tag_dict) -> nips.Tag:
+    try:
+        return nips.ETag.parse_obj(tag_dict)
+    except:
+        pass
+
+    try:
+        return nips.PTag.parse_obj(tag_dict)
+    except:
+        pass
+
+    raise UnknownTagError(f"Could not parse tag {tag_dict}")
 
 
-class Database(BaseModel):
-    identities: Optional[Dict[str, Identity]] = {}
-    events: Optional[Dict[str, Dict[Kind, List[DBEvent]]]] = {}
+class Identity(Model):
+    pubkey: str = fields.CharField(max_length=64, pk=True, index=True)
+    name: str = fields.TextField(null=True)
+    about: str = fields.TextField(null=True)
+    picture: str = fields.TextField(null=True)
 
-    lock: Lock = db_lock
+    def __str__(self) -> str:
+        return f"{self.pubkey}, {self.name}, {self.about}, {self.picture}"
 
-    class Config:
-        extra = "allow"
-        arbitrary_types_allowed = True
 
-    @classmethod
-    async def load(cls):
-        async with aiofiles.open("db.json", mode="r") as fp:
-            return Database(**json.loads(await fp.read()))
+class Event(Model):
+    table_id = fields.IntField(pk=True)
 
-    async def save_db(self):
-        async with aiofiles.open("db.json", mode="w") as fp:
-            await fp.write(self.json(indent=4, exclude={"lock"}))
+    id: str = fields.TextField()
+    kind = fields.IntField()
+    content: str = fields.TextField()
+    created_at = fields.IntField()
+    tags = fields.JSONField()
+    pubkey: str = fields.TextField()
+    sig: str = fields.TextField()
+
+    class Meta:
+        table = "event"
+
+    def __str__(self) -> str:
+        return self.id
+
+    def nipple(self) -> nips.Event:
+        """Converts the database record into a NIPS defined event
+
+        Returns:
+            nips.Event: NIP Event
+        """
+        return nips.Event(
+            pubkey=self.pubkey,
+            create_at=self.created_at,
+            kind=self.kind,
+            sig=self.sig,
+            tags=[create_tag(tag_dict) for tag_dict in self.tags],
+            content=self.content,
+        )

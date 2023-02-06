@@ -2,7 +2,10 @@ import json
 from hashlib import sha256
 from uuid import uuid4
 
-from ekiden.database import Database, Identity
+from tortoise.exceptions import DoesNotExist
+from tortoise.transactions import atomic
+
+from ekiden import database
 from ekiden.nips import Event, Kind, dump_json
 from ekiden.subscriptions import SubscriptionPool
 
@@ -11,7 +14,22 @@ class AsyncRelay:
     def __init__(self, sub_pool: SubscriptionPool) -> None:
         self.conn_pool = sub_pool
 
-    async def event(self, event_data: dict, db: Database):
+    async def get_identity(self, pubkey: str) -> database.Identity:
+        """Retreive an identity record by pubkey from the database if it exists, else create a new one.
+
+        Args:
+            pubkey (str): the pubkey of the identity.
+
+        Returns:
+            database.Identity: the identity record.
+        """
+        if await database.Identity.exists(pubkey=pubkey):
+            return await database.Identity.get(pubkey=pubkey)
+
+        return await database.Identity.create(pubkey=pubkey)
+
+    @atomic()
+    async def event(self, event_data: dict):
         """Handles the event action.
 
         Args:
@@ -20,7 +38,7 @@ class AsyncRelay:
         """
         try:
             event = Event.verify(event_data)
-        except Exception as e:
+        except:
             return dump_json(
                 [
                     "OK",
@@ -29,33 +47,27 @@ class AsyncRelay:
                     "failed to verify key",
                 ]
             )
-
-        events = db.events.setdefault(event.pubkey, {})
-
         if event.kind == Kind.set_metadata:
-            if event.kind in events:
-                # A relay may delete past set_metadata events once it gets a new one for the same pubkey.
-                events[event.kind].pop(0)
-            await self.save_metadata(event, db=db)
+            try:
+                if db_event := await database.Event.get(pubkey=event.pubkey, kind=event.kind):
+                    await db_event.delete()
+            except DoesNotExist:
+                pass
+
+            identity = await self.get_identity(pubkey=event.pubkey)
+            await self.save_metadata(identity, event)
 
         await self.conn_pool.broadcast(event)
 
-        # Save event to db
-        kind_events = events.setdefault(event.kind, [])
-        kind_events.append(
-            {
-                "id": event.id,
-                "kind": event.kind,
-                "pubkey": event.pubkey,
-                "created_at": event.created_at,
-                "tags": event.tags,
-                "content": event.content,
-                "sig": event.sig,
-            }
+        await database.Event.create(
+            id=event.id,
+            kind=event.kind,
+            content=event.content,
+            created_at=event.created_at,
+            tags=[tag.dict() for tag in event.tags],
+            pubkey=event.pubkey,
+            sig=event.sig,
         )
-
-        async with db.lock:
-            await db.save_db()
 
         return dump_json(
             [
@@ -66,26 +78,13 @@ class AsyncRelay:
             ]
         )
 
-    async def save_metadata(self, event: Event, db: Database):
+    async def save_metadata(self, identity: database.Identity, event: Event):
         content = json.loads(event.content)
-        if event.pubkey in db.identities:
-            identity = db.identities.get(event.pubkey)
-            print(f"updating identity {event.pubkey}:{content}")
-            if "name" in content:
-                identity.name = content["name"]
-            if "about" in content:
-                identity.about = content["about"]
-            if "picture" in content:
-                identity.picture = content["picture"]
-        else:
-            print(f"new identity {content}")
-            db.identities.update(
-                {
-                    event.pubkey: Identity(
-                        name=content["name"],
-                        about=content["about"],
-                        picture=content["picture"],
-                        pubkey=event.pubkey,
-                    )
-                }
-            )
+        if "name" in content:
+            identity.name = content["name"]
+        if "about" in content:
+            identity.about = content["about"]
+        if "picture" in content:
+            identity.picture = content["picture"]
+
+        await identity.save()

@@ -192,3 +192,6 @@ poetry.toml
 scripts
 db.json
 server.py
+ekiden.sqlite3
+ekiden.sqlite3-shm
+ekiden.sqlite3-wal
