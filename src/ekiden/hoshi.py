@@ -27,9 +27,9 @@ class Hoshi:
                     case "EVENT":
                         await self.handle_event(websocket=websocket, message=msg[1])
                     case "REQ":
-                        self.handle_request(websocket=websocket, subscription_id=msg[1], filters_dict=msg[2])
+                        await self.handle_request(websocket=websocket, subscription_id=msg[1], filters_dict=msg[2])
                     case "CLOSE":
-                        self.handle_close(websocket)
+                        await self.handle_close(websocket)
 
         except WebSocketDisconnect:
             await self.handle_disconnect(websocket)
