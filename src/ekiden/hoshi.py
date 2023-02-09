@@ -22,13 +22,14 @@ class Hoshi:
         await websocket.accept()
         try:
             while True:
-                msg = await websocket.receive_json()
-                match msg[0]:
-                    case "EVENT":
-                        await self.handle_event(websocket=websocket, message=msg[1])
-                    case "REQ":
-                        await self.handle_request(websocket=websocket, subscription_id=msg[1], filters_dict=msg[2])
-                    case "CLOSE":
+                match await websocket.receive_json():
+                    case ["EVENT", message]:
+                        await self.handle_event(websocket=websocket, message=message)
+                    case ["REQ", subscription_id, filters_dict]:
+                        await self.handle_request(
+                            websocket=websocket, subscription_id=subscription_id, filters_dict=filters_dict
+                        )
+                    case ["CLOSE", subscription_id]:
                         await self.handle_close(websocket)
 
         except WebSocketDisconnect:
