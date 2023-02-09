@@ -23,35 +23,44 @@ class Hoshi:
         try:
             while True:
                 msg = await websocket.receive_json()
-                if msg[0] == "EVENT":
-                    """
-                    used to publish events
-                    """
-                    response = await self.relay.event(msg[1])
-                    await websocket.send_text(response)
-                elif msg[0] == "REQ":
-                    """
-                    used to request events and subscribe to new updates
-                    """
-                    sub = Subscription(
-                        filters=Filters.parse_obj(msg[2]),
-                        websocket=websocket,
-                        subscription_id=msg[1],
-                    )
-                    await self.sub_pool.add_subscription(subscription=sub)
-                    # set sane cap
-                    limit = sub.filters.limit if sub.filters.limit else 100
-                    for event in await database.Event.all().limit(limit):
-                        await sub.send(event.nipple())
-
-                elif msg[0] == "CLOSE":
-                    """
-                    used to stop previous subscriptions
-                    """
-                    await self.handle_disconnect(websocket)
+                match msg[0]:
+                    case "EVENT":
+                        await self.handle_event(websocket=websocket, message=msg[1])
+                    case "REQ":
+                        self.handle_request(websocket=websocket, subscription_id=msg[1], filters_dict=msg[2])
+                    case "CLOSE":
+                        self.handle_close(websocket)
 
         except WebSocketDisconnect:
             await self.handle_disconnect(websocket)
+
+    async def handle_event(self, websocket: WebSocket, message: dict):
+        #     """
+        #     used to publish events
+        #     """
+        response = await self.relay.event(message)
+        await websocket.send_text(response)
+
+    async def handle_request(self, websocket: WebSocket, subscription_id: str, filters_dict: dict):
+        """
+        used to request events and subscribe to new updates
+        """
+        sub = Subscription(
+            filters=Filters.parse_obj(filters_dict),
+            websocket=websocket,
+            subscription_id=subscription_id,
+        )
+        await self.sub_pool.add_subscription(subscription=sub)
+        # set sane cap
+        limit = sub.filters.limit if sub.filters.limit else 100
+        for event in await database.Event.all().limit(limit):
+            await sub.send(event.nipple())
+
+    async def handle_close(self, websocket: WebSocket):
+        #     """
+        #     used to stop previous subscriptions
+        #     """
+        await self.handle_disconnect(websocket)
 
     async def handle_disconnect(self, websocket: WebSocket):
         subscription = await self.sub_pool.get_subscription(websocket=websocket)
