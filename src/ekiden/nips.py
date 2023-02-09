@@ -135,7 +135,7 @@ class Event(BaseModel):
         )
         if not ret:
             raise VerificationError("contents of the message could not be verified with the signature provided")
-        event["tags"] = [create_tag(json.loads(tag_info)) for tag_info in event["tags"]]
+        event["tags"] = [create_tag(tag_info) for tag_info in event["tags"]]
         return Event(**event)
 
     @staticmethod
