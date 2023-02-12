@@ -54,7 +54,7 @@ class Hoshi:
         )
         await self.sub_pool.add_subscription(subscription=sub)
         # set sane cap
-        limit = sub.filters.limit if sub.filters.limit else 100
+        limit = sub.filters.limit if sub.filters.limit else 2000
         for event in await database.Event.all().limit(limit):
             await sub.send(event.nipple())
 

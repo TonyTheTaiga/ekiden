@@ -47,15 +47,14 @@ class AsyncRelay:
                     "failed to verify key",
                 ]
             )
-        if event.kind == Kind.set_metadata:
-            try:
-                if db_event := await database.Event.get(pubkey=event.pubkey, kind=event.kind):
-                    await db_event.delete()
-            except DoesNotExist:
-                pass
 
-            identity = await self.get_identity(pubkey=event.pubkey)
-            await self.save_metadata(identity, event)
+        match event.kind:
+            case Kind.set_metadata:
+                await self.delete_event(event)
+                identity = await self.get_identity(pubkey=event.pubkey)
+                await self.save_metadata(identity, event)
+            case Kind.contact_list:
+                await self.delete_event(event)
 
         await self.conn_pool.broadcast(event)
 
@@ -77,6 +76,13 @@ class AsyncRelay:
                 "",
             ]
         )
+
+    async def delete_event(self, event):
+        try:
+            if db_event := await database.Event.get(pubkey=event.pubkey, kind=event.kind):
+                await db_event.delete()
+        except DoesNotExist:
+            pass
 
     async def save_metadata(self, identity: database.Identity, event: Event):
         content = json.loads(event.content)
