@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from starlette.applications import Starlette
@@ -9,8 +8,6 @@ from tortoise.transactions import atomic
 
 from ekiden import database as db
 from ekiden.hoshi import Hoshi
-
-logging.basicConfig(level=logging.INFO)
 
 
 async def startup():
@@ -23,6 +20,11 @@ async def shutdown():
 
 
 def create_app():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='{"name": "%(name)s", "level": "%(levelname)s", "message": %(message)s}',
+    )
+
     return Starlette(
         routes=[
             WebSocketRoute(path="/", endpoint=Hoshi()),

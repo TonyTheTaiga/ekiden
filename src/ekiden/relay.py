@@ -1,11 +1,10 @@
-import json
 from hashlib import sha256
 from uuid import uuid4
 
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
-from ekiden import database
+from ekiden import database, logger
 from ekiden.nips import Event, Kind, dump_json
 from ekiden.subscriptions import SubscriptionPool
 
@@ -14,19 +13,19 @@ class AsyncRelay:
     def __init__(self, sub_pool: SubscriptionPool) -> None:
         self.conn_pool = sub_pool
 
-    async def get_identity(self, pubkey: str) -> database.Identity:
-        """Retreive an identity record by pubkey from the database if it exists, else create a new one.
+    # async def get_identity(self, pubkey: str) -> database.Identity:
+    #     """Retreive an identity record by pubkey from the database if it exists, else create a new one.
 
-        Args:
-            pubkey (str): the pubkey of the identity.
+    #     Args:
+    #         pubkey (str): the pubkey of the identity.
 
-        Returns:
-            database.Identity: the identity record.
-        """
-        if await database.Identity.exists(pubkey=pubkey):
-            return await database.Identity.get(pubkey=pubkey)
+    #     Returns:
+    #         database.Identity: the identity record.
+    #     """
+    #     if await database.Identity.exists(pubkey=pubkey):
+    #         return await database.Identity.get(pubkey=pubkey)
 
-        return await database.Identity.create(pubkey=pubkey)
+    #     return await database.Identity.create(pubkey=pubkey)
 
     @atomic()
     async def event(self, event_data: dict):
@@ -51,8 +50,8 @@ class AsyncRelay:
         match event.kind:
             case Kind.set_metadata:
                 await self.delete_event(event)
-                identity = await self.get_identity(pubkey=event.pubkey)
-                await self.save_metadata(identity, event)
+                # identity = await self.get_identity(pubkey=event.pubkey)
+                # await self.save_metadata(identity, event)
             case Kind.contact_list:
                 await self.delete_event(event)
 
@@ -84,13 +83,13 @@ class AsyncRelay:
         except DoesNotExist:
             pass
 
-    async def save_metadata(self, identity: database.Identity, event: Event):
-        content = json.loads(event.content)
-        if "name" in content:
-            identity.name = content["name"]
-        if "about" in content:
-            identity.about = content["about"]
-        if "picture" in content:
-            identity.picture = content["picture"]
+    # async def save_metadata(self, identity: database.Identity, event: Event):
+    #     content = json.loads(event.content)
+    #     if "name" in content:
+    #         identity.name = content["name"]
+    #     if "about" in content:
+    #         identity.about = content["about"]
+    #     if "picture" in content:
+    #         identity.picture = content["picture"]
 
-        await identity.save()
+    #     await identity.save()

@@ -1,12 +1,10 @@
 import asyncio
-import logging
 from typing import MutableSet, Optional
 
 from starlette.websockets import WebSocket
 
+from ekiden import logger
 from ekiden.nips import ETag, Event, Filters, PTag, dump_json
-
-logger = logging.getLogger(__name__)
 
 
 def validate_scalar(candidates, subject) -> bool:

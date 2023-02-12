@@ -1,14 +1,12 @@
-import logging
+import json
 
 from starlette.websockets import WebSocket, WebSocketDisconnect
 from tortoise.transactions import atomic
 
-from ekiden import database
+from ekiden import database, logger
 from ekiden.nips import Filters
 from ekiden.relay import AsyncRelay
 from ekiden.subscriptions import Subscription, SubscriptionPool
-
-logging.basicConfig(level=logging.INFO)
 
 
 class Hoshi:
@@ -40,6 +38,7 @@ class Hoshi:
         """
         used to publish events
         """
+        logger.info(json.dumps(message))
         response = await self.relay.event(message)
         await websocket.send_text(response)
 

@@ -22,17 +22,17 @@ def create_tag(tag_dict) -> nips.Tag:
     raise UnknownTagError(f"Could not parse tag {tag_dict}")
 
 
-class Identity(Model):
-    pubkey: str = fields.CharField(max_length=64, pk=True, index=True)
-    name: str = fields.TextField(null=True)
-    about: str = fields.TextField(null=True)
-    picture: str = fields.TextField(null=True)
+# class Identity(Model):
+#     pubkey: str = fields.CharField(max_length=64, pk=True, index=True)
+#     name: str = fields.TextField(null=True)
+#     about: str = fields.TextField(null=True)
+#     picture: str = fields.TextField(null=True)
 
-    class Meta:
-        table = "identity"
+#     class Meta:
+#         table = "identity"
 
-    def __str__(self) -> str:
-        return f"{self.pubkey}, {self.name}, {self.about}, {self.picture}"
+#     def __str__(self) -> str:
+#         return f"{self.pubkey}, {self.name}, {self.about}, {self.picture}"
 
 
 class Event(Model):
