@@ -97,14 +97,11 @@ class Event(BaseModel):
             ).encode("utf-8")
         ).hexdigest()
 
-    def sign(self, private_key: str) -> str:
+    def sign(self, private_key: str):
         """Signs the messge (Event.id) and sets the sig field
 
         Args:
             private_key (str): The private key to sign the message with
-
-        Returns:
-            str: _description_
         """
         self.sig = PrivateKey.load(private_key).sign(msg=bytes.fromhex(self.id))
 
@@ -129,14 +126,12 @@ class Event(BaseModel):
 
         Returns a new instance with the provided information if successful else raises a VerificationError
         """
-        ret = PublicKey(event["pubkey"]).verify(
-            msg=bytes.fromhex(event["id"]),
-            signature=event["sig"],
-        )
+        event["tags"] = [create_tag(tag_info) for tag_info in event["tags"]]
+        _event = Event(**event)
+        ret = PublicKey(event["pubkey"]).verify(msg=bytes.fromhex(_event.id), signature=event["sig"])
         if not ret:
             raise VerificationError("contents of the message could not be verified with the signature provided")
-        event["tags"] = [create_tag(tag_info) for tag_info in event["tags"]]
-        return Event(**event)
+        return _event
 
     @staticmethod
     def serialize(pubkey, created_at, kind, tags, content) -> str:

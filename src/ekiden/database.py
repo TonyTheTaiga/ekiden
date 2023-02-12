@@ -28,6 +28,9 @@ class Identity(Model):
     about: str = fields.TextField(null=True)
     picture: str = fields.TextField(null=True)
 
+    class Meta:
+        table = "identity"
+
     def __str__(self) -> str:
         return f"{self.pubkey}, {self.name}, {self.about}, {self.picture}"
 
@@ -47,7 +50,7 @@ class Event(Model):
         table = "event"
 
     def __str__(self) -> str:
-        return self.id
+        return f"{self.id} {self.kind} {self.content} {self.tags} {self.pubkey} {self.sig}"
 
     def nipple(self) -> nips.Event:
         """Converts the database record into a NIPS defined event

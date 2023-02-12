@@ -1,6 +1,7 @@
 import logging
 
 from starlette.websockets import WebSocket, WebSocketDisconnect
+from tortoise.transactions import atomic
 
 from ekiden import database
 from ekiden.nips import Filters
@@ -36,9 +37,9 @@ class Hoshi:
             await self.handle_disconnect(websocket)
 
     async def handle_event(self, websocket: WebSocket, message: dict):
-        #     """
-        #     used to publish events
-        #     """
+        """
+        used to publish events
+        """
         response = await self.relay.event(message)
         await websocket.send_text(response)
 
@@ -58,9 +59,9 @@ class Hoshi:
             await sub.send(event.nipple())
 
     async def handle_close(self, websocket: WebSocket):
-        #     """
-        #     used to stop previous subscriptions
-        #     """
+        """
+        used to stop previous subscriptions
+        """
         await self.handle_disconnect(websocket)
 
     async def handle_disconnect(self, websocket: WebSocket):
