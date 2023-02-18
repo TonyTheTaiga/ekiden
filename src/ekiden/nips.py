@@ -20,6 +20,7 @@ class Kind(IntEnum):
     text_note = 1
     recommend_server = 2
     contact_list = 3
+    delete = 5
 
 
 class Tag(BaseModel):
