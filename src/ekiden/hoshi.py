@@ -14,6 +14,9 @@ class Hoshi:
     relay = AsyncRelay(sub_pool=sub_pool)
 
     async def __call__(self, scope, receive, send):
+        """
+        Entrypoint used by Starlette
+        """
         websocket = WebSocket(scope=scope, receive=receive, send=send)
         await self.endpoint(websocket)
 
